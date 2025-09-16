@@ -110,6 +110,11 @@
         text-align: right;
     }
 
+    select { 
+        margin: 5px;
+        padding: 6px 12px;
+    }
+
     .file-container {
         margin-top: 15px;
     }
@@ -149,7 +154,19 @@
                 <input type="range" id="volume-bar" min="0" max="1" step="0.01" value="0.5">
                 <span id="volume-value">50</span>
             </div>
+            <div class="speed-control-container">
+                <label for="speed-control">재생 속도</label>
+                <select id="speed-control">
+                    <option value="0.5">0.5x</option>
+                    <option value="0.75">0.75x</option>
+                    <option value="1" selected>1x (기본)</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2x</option>
+                </select>
+            </div>
         </div>
+        
 
         <div class="file-container">
             <input type="file" id="fileInput" class="file-input" multiple accept="audio/*" >
@@ -227,10 +244,10 @@
 
         // 음소거
         muteBtn.addEventListener("click", () => {
-        audio.muted = !audio.muted;
-        muteBtn.textContent = audio.muted ? "🔇" : "🔊";
-        volumeBar.value = audio.muted ? 0 : audio.volume;
-        volumeValue.textContent = formatVolume(volumeBar.value);
+            audio.muted = !audio.muted;
+            muteBtn.textContent = audio.muted ? "🔇" : "🔊";
+            volumeBar.value = audio.muted ? 0 : audio.volume;
+            volumeValue.textContent = formatVolume(volumeBar.value);
         });
 
         /* 이동기능 */
@@ -326,6 +343,49 @@
             }
             seekbar.value = Math.floor(audio.currentTime);
             currentTime.textContent = formatTime(audio.currentTime);
+        });
+
+        /* 재생속도 조절 */
+        const speedControlBtn = document.querySelector("#speed-control");
+
+        speedControlBtn.addEventListener("change", () => {
+            audio.playbackRate = parseFloat(speedControlBtn.value);
+        });
+
+        /* shortcut */
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playBtn.click();
+            } else if (e.code === 'ArrowLeft') {
+                backwardBtn.click();
+            } else if (e.code === 'ArrowRight') {
+                forwardBtn.click();
+            } else if (e.code === 'KeyL') {
+                loopBtn.click();
+            } else if (e.code === 'KeyT') {
+                sectionBtn.click();
+            } else if (e.code === 'KeyM') {
+                muteBtn.click();
+            } else if (e.code === 'Equal') {
+                volumeBar.value = parseFloat(volumeBar.value) + parseFloat(volumeBar.step);
+                audio.volume = volumeBar.value;
+                if (audio.volume === 0) {
+                    muteBtn.textContent = "🔇";
+                } else {
+                    muteBtn.textContent = "🔊";
+                }
+                volumeValue.textContent = formatVolume(volumeBar.value);
+            } else if (e.code === 'Minus') {
+                volumeBar.value -= 0.01;
+                audio.volume = volumeBar.value;
+                if (audio.volume === 0) {
+                    muteBtn.textContent = "🔇";
+                } else {
+                    muteBtn.textContent = "🔊";
+                }
+                volumeValue.textContent = formatVolume(volumeBar.value);
+            }
         });
 
     </script>
