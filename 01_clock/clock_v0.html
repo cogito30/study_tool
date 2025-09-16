@@ -6,6 +6,9 @@
     <title>Clock</title>
     <style>
     body {
+        font-family: 'Orbitron', sans-serif;    
+        margin: 0;
+        padding: 0;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -15,6 +18,44 @@
         font-family: 'Courier New', monospace;
     }
     
+    #clock {
+        text-align: center;
+    }
+    
+    #timezone {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        background-color: #111;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        z-index: 100;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    #format-hour {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        padding: 8px 16px;
+        background-color: #111;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        z-index: 100;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    #date, #time, #ampm {
+        text-shadow: 0 0 3px #00ff88, 0 0 8px #00ff88;
+    }
+
     .options {
         display: flex;
         justify-content: center;
@@ -42,26 +83,47 @@
         margin-bottom: 10px;
     }
 
-    #time {
-        font-size: 5rem;
+    #time, #ampm {
+        font-size: 10rem;
         letter-spacing: 5px;
     }
+
+    .fullscreen-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        background-color: #111;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        z-index: 100;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
 
     </style>
 </head>
 <body>
+    <div class="settings">
+        <button id="fullscreen-btn" class="fullscreen-btn">🖥️ 전체화면</button>
+    </div>
+
     <div id="clock">
         <div class="options">
             <select id="format-hour">
-                <option value="24" selected>24시간제</option>
-                <option value="12">12시간제</option>
+                <option value="24" selected>24H</option>
+                <option value="12">12H</option>
             </select>
 
             <select id="timezone">
-                <option value="Asia/Seoul" selected>서울</option>
-                <option value="America/New_York">뉴욕</option>
-                <option value="Europe/London">런던</option>
-                <option value="Asia/Tokyo">도쿄</option>
+                <option value="Asia/Seoul" selected>Asia/Seoul</option>
+                <option value="America/New_York">America/New_York</option>
+                <option value="Europe/London">Europe/London</option>
+                <option value="Asia/Tokyo">Asia/Tokyo</option>
+                <option value="Australia/Sydney">Australia/Sydney</option>
             </select>
         </div>
 
@@ -71,53 +133,99 @@
         <div id="time">
             00:00:00
         </div>
+        <div id="ampm"></div>
     </div>
 
     <script>
         const date = document.querySelector("#date");
         const time = document.querySelector("#time");
         const formatHour = document.querySelector("#format-hour");
-        let is24Hour = formatHour.value;
+        // let is24Hour = formatHour.value === "12" ? false : true;
         const timezone = document.querySelector("#timezone");
-        let timezoneLocation = timezone.value;
+        // let timezoneLocation = timezone.value;
+        const ampm = document.querySelector("#ampm");
 
-        const formatDate = (now) => {
-            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-            let year = now.getFullYear();
-            let month = String(now.getMonth() + 1).padStart(2, '0');
-            let date = String(now.getDate()).padStart(2, '0');
-            let day = days[now.getDay()];
-            return `${year}-${month}-${date} (${day})`;
-        }
+        // const formatDate = (now) => {
+        //     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        //     let year = now.getFullYear();
+        //     let month = String(now.getMonth() + 1).padStart(2, '0');
+        //     let date = String(now.getDate()).padStart(2, '0');
+        //     let day = days[now.getDay()];
+        //     return `${year}-${month}-${date} (${day})`;
+        // }
 
-        const formatTime = (now, is24Hour) => {
-            let ampm = "";
-            let hours = String(now.getHours()).padStart(2, '0');
-            let minutes = String(now.getMinutes()).padStart(2, '0');
-            let seconds = String(now.getSeconds()).padStart(2, '0');
+        // const formatTime = (now, is24Hour) => {
+        //     let ampm = "";
+        //     let hours = String(now.getHours()).padStart(2, '0');
+        //     let minutes = String(now.getMinutes()).padStart(2, '0');
+        //     let seconds = String(now.getSeconds()).padStart(2, '0');
 
-            // select 12H/24H
-            if (!is24Hour) {
-                ampm = hours >= 12 ? "PM" : "AM"; 
-                hours = hours % 12;
-                hours = hours == 0 ? 12 : hours;
-                hours = String(hours).padStart(2, "0");
-                return `${hours}:${minutes}:${seconds} ${ampm}`;
-            }
+        //     // select 12H/24H
+        //     if (!is24Hour) {
+        //         ampm = hours >= 12 ? "PM" : "AM"; 
+        //         hours = hours % 12;
+        //         hours = hours == 0 ? 12 : hours;
+        //         hours = String(hours).padStart(2, "0");
+        //         return `${hours}:${minutes}:${seconds} ${ampm}`;
+        //     }
 
-            return `${hours}:${minutes}:${seconds}`;
-        };
+        //     return `${hours}:${minutes}:${seconds}`;
+        // };
         
+        // const updateClock = () => {
+        //     const now = new Date();
+        //     is24Hour = formatHour.value === "12" ? false : true;
+        //     timezoneLocation = timezone.value;
+        //     date.textContent = formatDate(now);
+        //     time.textContent = formatTime(now, is24Hour);
+        // };
+
         const updateClock = () => {
             const now = new Date();
-            is24Hour = formatHour.value === "12" ? false : true;
-            timezoneLocation = timezone.value;
-            date.textContent = formatDate(now);
-            time.textContent = formatTime(now, is24Hour);
+            const timeOptions = {
+                timeZone: timezone.value,
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: formatHour.value === "12",
+            };
+            const timeFormatter = new Intl.DateTimeFormat("en-us", timeOptions);
+            let [hms, ap] = timeFormatter.format(now).split(" ");
+            time.textContent = hms;
+            if (ap !== undefined) {
+                ampm.textContent = `${ap}`;
+            } else {
+                ampm.textContent = ``;
+            }
+            console.log(ampm);
+
+            const dateOptions = {
+                timeZone: timezone.value,
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                weekday: "short",
+            };
+            const dateFormatter = new Intl.DateTimeFormat("en-us", dateOptions);
+            let [day, ymd] = dateFormatter.format(now).split(",");
+            let [m, d, y] = ymd.trim().split("/");
+            date.textContent = `${y}/${m}/${d} (${day})`
         };
 
         setInterval(updateClock, 1000);
         updateClock();
+
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                    alert(`Fail FullScreen Mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
 
     </script>
 </body>
