@@ -13,3 +13,5 @@
 - show the current time
 - select 12H/24H
 - select timezone
+
+## Stopwatch
