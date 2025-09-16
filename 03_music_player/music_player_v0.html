@@ -177,6 +177,10 @@
     </div>
 
     <script>
+        const initialDisplay = () => {
+            playBtn.textContent = "Play";
+        };
+
         /* play && pause */
         const audio = document.querySelector("#audio");
         const playBtn = document.querySelector("#play-pause-btn");
@@ -297,6 +301,7 @@
         file.addEventListener("change", (e) => {
             audio.src = URL.createObjectURL(e.target.files[0]);
             fileName.textContent = e.target.files[0].name;
+            initialDisplay();
         });
 
         /* 구간 반복 */
@@ -323,7 +328,6 @@
             sectionState = 0;
             sectionBtn.classList.remove("start");
             sectionBtn.classList.remove("end");
-            console.log
         };
 
         sectionBtn.addEventListener("click", () => {

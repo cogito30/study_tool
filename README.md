@@ -27,3 +27,4 @@
 - repeat one song
 - repeat section
 - control palyspeed(0.25x-2.0x)
+- shortcut
