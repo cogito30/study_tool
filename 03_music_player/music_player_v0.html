@@ -124,6 +124,38 @@
         font-size: 0.9rem;
     }
 
+    ul { 
+        list-style: none; 
+        padding: 0; 
+        margin-top: 20px; 
+        border-top: 1px solid #ccc;
+    }
+
+    li { 
+        cursor: pointer; 
+        padding: 8px; 
+        border-bottom: 1px solid #eee; }
+
+    li:hover { 
+        background: #f1c40f;
+        color: #2c3e50;
+    }
+
+    li.active { 
+        background-color: #0b9adc; 
+        font-weight: bold;
+    }
+
+    #file-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 20px;
+        border-top: 1px solid #ccc;
+        max-height: 600px;
+        overflow-y: auto;
+        text-align: center;
+    }
+
     </style>
 </head>
 <body>
@@ -169,11 +201,14 @@
         
 
         <div class="file-container">
-            <input type="file" id="fileInput" class="file-input" multiple accept="audio/*" >
+            <input type="file" id="file-input" class="file-input" multiple accept="audio/*" >
             <!-- <div class="file-input" onclick="document.getElementById('fileInput').click()">
                 📁 음악 파일 추가하기 (클릭 또는 드래그)
             </div> -->
         </div>
+
+        <div id="file-list"></div>
+
     </div>
 
     <script>
@@ -294,15 +329,51 @@
         });
 
         /* File Open */
-        const file = document.querySelector("#fileInput");
+        const fileInput = document.querySelector("#file-input");
         const fileName = document.querySelector("#file-name");
+        const fileList = document.querySelector("#file-list");
+        let playList = [];
+        let currentIndex = -1;
 
         // 파일 하나 열기
-        file.addEventListener("change", (e) => {
-            audio.src = URL.createObjectURL(e.target.files[0]);
-            fileName.textContent = e.target.files[0].name;
+        // fileInput.addEventListener("change", (e) => {
+        //     audio.src = URL.createObjectURL(e.target.files[0]);
+        //     fileName.textContent = e.target.files[0].name;
+        //     initialDisplay();
+        // });
+
+        // 파일 여러개 열기
+        fileInput.addEventListener('change', (e) => {
+            playList = Array.from(e.target.files);
+            currentIndex = 0;
+            renderPlaylist();
+            if (playList.length > 0) {
+                playTrack(currentIndex);
+            }
             initialDisplay();
         });
+
+        const renderPlaylist = () => {
+            fileList.innerHTML = '';
+            playList.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                if (index === currentIndex) li.classList.add('active');
+                li.addEventListener('click', () => {
+                playTrack(index);
+                });
+                fileList.appendChild(li);
+            });
+        };
+
+        const playTrack = (index) => {
+            if (index < 0 || index >= playList.length) return;
+            currentIndex = index;
+            audio.src = URL.createObjectURL(playList[currentIndex]);
+            fileName.textContent = `🎵 재생 중: ${playList[currentIndex].name}`;
+            audio.play();
+            renderPlaylist();
+        }
 
         /* 구간 반복 */
         const sectionBtn = document.querySelector("#section-btn");
@@ -371,6 +442,8 @@
                 sectionBtn.click();
             } else if (e.code === 'KeyM') {
                 muteBtn.click();
+            } else if (e.code === 'KeyO') {
+                fileInput.click(); 
             } else if (e.code === 'Equal') {
                 volumeBar.value = parseFloat(volumeBar.value) + parseFloat(volumeBar.step);
                 audio.volume = volumeBar.value;
