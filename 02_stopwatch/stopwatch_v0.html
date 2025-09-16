@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StopWatch</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Share Tech Mono', monospace;
+        background-color: #000;
+        color: #0f0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .stopwatch-container {
+        width: 100%;              
+        max-width: 1200px;
+        padding: 20px;
+        border-radius: 12px;
+        background: #111;
+    }
+
+    .stopwatch-container h1 {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+    }
+
+    #time {
+        font-size: 4rem;
+        background: #000;
+        padding: 20px;
+        border: 2px solid #0f0;
+        border-radius: 10px;
+        margin: 0 auto 30px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .controls {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 30px;
+        width: 100%;
+    }
+
+    .controls button {
+        background: #0f0;
+        color: #000;
+        font-size: 1.2rem;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        flex: 1 1 150px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .controls button:hover:enabled {
+        background: #1aff1a;
+    }
+
+    .controls button:disabled {
+        background: #444;
+        color: #999;
+        cursor: not-allowed;
+    }
+
+    #lap-container {
+        margin-top: 20px;
+        width: 100%;
+        border: 1px solid #0f0;
+        border-radius: 8px;
+        padding: 20px;
+        background: #000;
+    }
+
+    #lap-container h3 {
+        font-size: 1.8rem;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    #lap-items {
+        max-height: 250px;
+        overflow-y: auto;
+        border-top: 1px solid #0f0;
+    }
+
+    .lap-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 5px;
+        border-bottom: 1px solid #0f0;
+        font-size: 1.1rem;
+    }
+
+    #fullscreen-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 16px;
+        background-color: #111;
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        cursor: pointer;
+        z-index: 100;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    #fullscreen-btn:hover {
+        background-color: #222;
+    }
+
+    @media (min-width: 768px) {
+        #time {
+            font-size: 5rem;
+        }
+        .controls button {
+            font-size: 1.3rem;
+            padding: 14px 28px;
+        }
+        #lap-container h3 {
+            font-size: 2rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        #time {
+            font-size: 6rem;
+        }
+        .controls button {
+            font-size: 1.4rem;
+            padding: 16px 32px;
+        }
+        .lap-item {
+            font-size: 1.2rem;
+        }
+    }
+    </style>
+</head>
+<body>
+    <div class="stopwatch-container">
+        <button id="fullscreen-btn">🖥️ 전체화면</button>
+        <h1>StopWatch</h1>
+        
+        <div id="time">00:00:00.000</div>
+        
+        <div class="controls">
+            <button id="start-pause-btn">Start</button>
+            <button id="reset-btn" disabled>Reset</button>
+            <button id="lap-btn" disabled>Lap</button>
+        </div>
+
+        <div id="lap-container">
+            <h3>Lap</h3>
+            <div id="lap-items"></div>
+        </div>
+    </div>
+
+    <script>
+        const fullscreenBtn = document.querySelector("#fullscreen-btn");
+        const time = document.querySelector("#time");
+        const startPauseBtn = document.querySelector("#start-pause-btn");
+        const resetBtn = document.querySelector("#reset-btn");
+        const lapBtn = document.querySelector("#lap-btn");
+        const lapItems = document.querySelector("#lap-items");
+
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval;
+        let previousLapTime = 0;
+        let lapCount = 1;
+        let isRunning = false;
+
+        const formatTime = (time) => {
+            const hour = String(Math.floor(time / 3600000)).padStart(2, '0');
+            const minute = String(Math.floor((time % 3600000) / 60000)).padStart(2, '0');
+            const second = String(Math.floor((time % 60000) / 1000)).padStart(2, '0');
+            const ms = String(time % 1000).padStart(3, '0');
+            
+            return `${hour}:${minute}:${second}.${ms}`;
+        };
+
+
+        startPauseBtn.addEventListener('click', () => {
+            if (isRunning) {
+                isRunning = false;
+                startPauseBtn.textContent = `Start`;
+                clearInterval(timerInterval);
+            } else {
+                isRunning = true;
+                startPauseBtn.textContent = `Pause`;
+                startTime = Date.now() - elapsedTime;
+                timerInterval = setInterval(() => {
+                    elapsedTime = Date.now() - startTime;
+                    time.textContent = formatTime(elapsedTime);
+                }, 10);
+                
+                lapBtn.disabled = false;
+                resetBtn.disabled = false;
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            elapsedTime = 0;
+            previousLapTime = 0;
+            lapCount = 1;
+            time.textContent = formatTime(elapsedTime);
+            lapItems.innerHTML = '';
+            lapBtn.disabled = true;
+            resetBtn.disabled = true;
+        });
+
+        lapBtn.addEventListener('click', () => {
+            const currentLapTime = elapsedTime;
+            const lapDiff = currentLapTime - previousLapTime;
+            previousLapTime = currentLapTime;
+
+            const lapText = formatTime(currentLapTime);
+            const diffText = formatTime(lapDiff);
+
+            const lapItem = document.createElement('div');
+            lapItem.className = 'lap-item';
+            lapItem.innerHTML = `
+                <span>Lap ${lapCount}</span>
+                <span>${lapText}</span>
+                <span>${diffText}</span>
+            `;
+            lapItems.prepend(lapItem);
+            lapCount++;
+        });
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                    alert(`Fail FullScreen: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+    </script>
+</body>
+</html>

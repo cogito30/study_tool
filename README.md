@@ -1,8 +1,8 @@
 # Study Tools
 
 ## Tools
-- [Clock]()
-- [Stopwatch]()
+- [Clock](./01_clock/)
+- [Stopwatch](./02_stopwatch/)
 - [Planner]()
 - [Timer]()
 - [Music Player]()
@@ -15,3 +15,5 @@
 - select timezone
 
 ## Stopwatch
+- measure time
+- record lap-time
