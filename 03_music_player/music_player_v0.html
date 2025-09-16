@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <style>
+    body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: #ecf0f1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .music-player {
+        background: #1e272e;
+        padding: 20px 25px;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        width: 360px;
+        text-align: center;
+    }
+
+    .music-player h2 {
+        margin-bottom: 15px;
+        font-size: 1.4rem;
+        color: #f1c40f;
+    }
+
+    .seekbar-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        margin-bottom: 15px;
+    }
+
+    #seekbar {
+        flex: 1;
+        accent-color: #f1c40f;
+    }
+
+    #current-time, #total-time {
+        font-size: 0.9rem;
+        color: #bdc3c7;
+    }
+
+    .btn-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-seek-container, .btn-volume-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    button {
+        background: #2c3e50;
+        color: #ecf0f1;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-size: 0.9rem;
+    }
+
+    button:hover {
+        background: #f1c40f;
+        color: #2c3e50;
+    }
+
+    #loop-btn {
+        font-weight: bold;
+    }
+
+    #loop-btn.active {
+        background: #27ae60;
+        color: white;
+    }
+
+    #volume-bar {
+        width: 100px;
+        accent-color: #f1c40f;
+    }
+
+    #volume-value {
+        min-width: 30px;
+        text-align: right;
+    }
+
+    .file-container {
+        margin-top: 15px;
+    }
+
+    .file-input {
+        color: #bdc3c7;
+        font-size: 0.9rem;
+    }
+
+    </style>
+</head>
+<body>
+    <div class="music-player">
+        <h2>Music Player</h2>
+        <p id="file-name">no file</p>
+        <audio src="" id="audio"></audio>
+
+        <div class = "seekbar-container">
+            <input type="range" id="seekbar" value="0" min="0" step="1">
+            <span id="current-time">00:00</span>
+            /
+            <span id="total-time">00:00</span>
+        
+        </div>
+        <div class="btn-container">
+            <div class="btn-seek-container">
+                <!-- <button id="prev-btn">⏮️ 이전</button> -->
+                <button id="backward-btn">⏪ 3초</button>
+                <button id="play-pause-btn">▶️ 재생</button>
+                <button id="forward-btn">⏩ 3초</button>
+                <!-- <button id="next-btn">⏭️ 다음</button> -->
+                <button id="loop-btn">🔁 Loop</button>
+            </div>
+            <div class="btn-volume-container">
+                <button id="mute-btn">🔊</button>
+                <input type="range" id="volume-bar" min="0" max="1" step="0.01" value="0.5">
+                <span id="volume-value">50</span>
+            </div>
+        </div>
+
+        <div class="file-container">
+            <input type="file" id="fileInput" class="file-input" multiple accept="audio/*" >
+            <!-- <div class="file-input" onclick="document.getElementById('fileInput').click()">
+                📁 음악 파일 추가하기 (클릭 또는 드래그)
+            </div> -->
+        </div>
+    </div>
+
+    <script>
+        /* play && pause */
+        const audio = document.querySelector("#audio");
+        const playBtn = document.querySelector("#play-pause-btn");
+
+        playBtn.addEventListener("click", () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.textContent = "Pause";
+            } else {
+                audio.pause();
+                playBtn.textContent = "Play";
+            }
+        });
+
+        /* seekbar Time */
+        const seekbar = document.querySelector("#seekbar");
+        const currentTime = document.querySelector("#current-time");
+        const totalTime = document.querySelector("#total-time");
+
+        const formatTime = (time) => {
+            const minute = String(Math.floor((time / 60) % 60)).padStart(2, '0');
+            const second = String(Math.floor(time % 60)).padStart(2, '0');
+            return `${minute}: ${second}`
+        };
+
+        // 전체길이 표시
+        audio.addEventListener('loadedmetadata', () => {
+            seekbar.max = Math.floor(audio.duration);
+            totalTime.textContent = formatTime(audio.duration);
+        });
+
+        // 재생위치 업데이트
+        audio.addEventListener('timeupdate', () => {
+            seekbar.value = Math.floor(audio.currentTime);
+            currentTime.textContent = formatTime(audio.currentTime);
+        });
+
+        // 시크바 이동
+        seekbar.addEventListener('input', () => {
+            audio.currentTime = parseInt(seekbar.value);
+            seekbar.value = Math.floor(audio.currentTime);
+            currentTime.textContent = formatTime(audio.currentTime);
+        });
+
+        /* Volume */
+        const volumeBar = document.querySelector("#volume-bar");
+        const volumeValue = document.querySelector("#volume-value");
+        const muteBtn = document.querySelector("#mute-btn");
+
+        const formatVolume = (volume) => {
+            const volumeValue = String(Math.floor(volume * 100)).padStart(2, '0');
+            return `${volumeValue}`;
+        };
+
+        // 볼륨 조절
+        volumeBar.addEventListener('input', () => {
+            audio.volume = volumeBar.value;
+            if (audio.volume === 0) {
+                muteBtn.textContent = "🔇";
+            } else {
+                muteBtn.textContent = "🔊";
+            }
+            volumeValue.textContent = formatVolume(volumeBar.value);
+        });
+
+        // 음소거
+        muteBtn.addEventListener("click", () => {
+        audio.muted = !audio.muted;
+        muteBtn.textContent = audio.muted ? "🔇" : "🔊";
+        volumeBar.value = audio.muted ? 0 : audio.volume;
+        volumeValue.textContent = formatVolume(volumeBar.value);
+        });
+
+        /* 이동기능 */
+        const forwardBtn = document.querySelector("#forward-btn");
+        const backwardBtn = document.querySelector("#backward-btn");
+
+        forwardBtn.addEventListener("click", () => {
+            audio.currentTime = parseInt(seekbar.value) + 3;
+            if (audio.currentTime >= audio.duration) {
+                audio.currentTime = audio.duration;
+            }
+            seekbar.value = Math.floor(audio.currentTime);
+            currentTime.textContent = formatTime(audio.currentTime);
+        });
+
+        backwardBtn.addEventListener("click", () => {
+            audio.currentTime = parseInt(seekbar.value) - 3;
+            if (audio.currentTime <= 0) {
+                audio.currentTime = 0;
+            }
+            seekbar.value = Math.floor(audio.currentTime);
+            currentTime.textContent = formatTime(audio.currentTime);
+        });
+
+        /* 반복 기능 */
+        const loopBtn = document.querySelector("#loop-btn");
+        let loopMode = 0;
+        
+        // 한곡 반복 기능
+        loopBtn.addEventListener("click", () => {
+            if (loopMode == 0) {
+                loopMode = 1;
+                audio.loop = true;
+                loopBtn.classList.toggle("active", true);
+            } else {
+                loopMode = 0;
+                audio.loop = false;
+                loopBtn.classList.toggle("active", false);
+            }
+        });
+
+        /* File Open */
+        const file = document.querySelector("#fileInput");
+        const fileName = document.querySelector("#file-name");
+
+        // 파일 하나 열기
+        file.addEventListener("change", (e) => {
+            audio.src = URL.createObjectURL(e.target.files[0]);
+            fileName.textContent = e.target.files[0].name;
+        });
+
+    </script>
+</body>
+</html> 

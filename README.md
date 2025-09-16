@@ -17,3 +17,10 @@
 ## Stopwatch
 - measure time
 - record lap-time
+
+## Music Player
+- open file
+- show current time / total time
+- play and pause
+- seekbar
+- repeat one song
