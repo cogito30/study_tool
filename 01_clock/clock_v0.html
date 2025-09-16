@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock</title>
+    <style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: #111;
+        color: #0f0;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .options {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    #format-hour, #timezone {
+        font-size: 1rem;
+        padding: 5px 10px;
+        margin: 5px 10px;
+        border-radius: 5px;
+        border: none;
+        outline: none;
+        background: #222;
+        color: #0f0;
+    }
+
+    #date {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2rem;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+    }
+
+    #time {
+        font-size: 5rem;
+        letter-spacing: 5px;
+    }
+
+    </style>
+</head>
+<body>
+    <div id="clock">
+        <div class="options">
+            <select id="format-hour">
+                <option value="24" selected>24시간제</option>
+                <option value="12">12시간제</option>
+            </select>
+
+            <select id="timezone">
+                <option value="Asia/Seoul" selected>서울</option>
+                <option value="America/New_York">뉴욕</option>
+                <option value="Europe/London">런던</option>
+                <option value="Asia/Tokyo">도쿄</option>
+            </select>
+        </div>
+
+        <div id="date">
+            0000/00/00 (Day)
+        </div>
+        <div id="time">
+            00:00:00
+        </div>
+    </div>
+
+    <script>
+        const date = document.querySelector("#date");
+        const time = document.querySelector("#time");
+        const formatHour = document.querySelector("#format-hour");
+        let is24Hour = formatHour.value;
+        const timezone = document.querySelector("#timezone");
+        let timezoneLocation = timezone.value;
+
+        const formatDate = (now) => {
+            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            let year = now.getFullYear();
+            let month = String(now.getMonth() + 1).padStart(2, '0');
+            let date = String(now.getDate()).padStart(2, '0');
+            let day = days[now.getDay()];
+            return `${year}-${month}-${date} (${day})`;
+        }
+
+        const formatTime = (now, is24Hour) => {
+            let ampm = "";
+            let hours = String(now.getHours()).padStart(2, '0');
+            let minutes = String(now.getMinutes()).padStart(2, '0');
+            let seconds = String(now.getSeconds()).padStart(2, '0');
+
+            // select 12H/24H
+            if (!is24Hour) {
+                ampm = hours >= 12 ? "PM" : "AM"; 
+                hours = hours % 12;
+                hours = hours == 0 ? 12 : hours;
+                hours = String(hours).padStart(2, "0");
+                return `${hours}:${minutes}:${seconds} ${ampm}`;
+            }
+
+            return `${hours}:${minutes}:${seconds}`;
+        };
+        
+        const updateClock = () => {
+            const now = new Date();
+            is24Hour = formatHour.value === "12" ? false : true;
+            timezoneLocation = timezone.value;
+            date.textContent = formatDate(now);
+            time.textContent = formatTime(now, is24Hour);
+        };
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+    </script>
+</body>
+</html>
