@@ -2,7 +2,9 @@
 
 ## Music Player(v0)
 - open file
-- show current time / total time
+- show progressbar, current-time, total-time
 - play and pause
-- seekbar
+- control volume and mute
+- forward/backward 3 seconds
 - repeat one song
+- repeat section

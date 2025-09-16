@@ -87,6 +87,19 @@
         color: white;
     }
 
+    #section-btn {
+        font-weight: bold;
+    }
+
+    #section-btn.start {
+        background: #366aa6;
+        color: white;
+    }
+    #section-btn.end {
+        background: #27ae60;
+        color: white;
+    }
+
     #volume-bar {
         width: 100px;
         accent-color: #f1c40f;
@@ -125,10 +138,11 @@
             <div class="btn-seek-container">
                 <!-- <button id="prev-btn">⏮️ 이전</button> -->
                 <button id="backward-btn">⏪ 3초</button>
-                <button id="play-pause-btn">▶️ 재생</button>
+                <button id="play-pause-btn">▶️ Play</button>
                 <button id="forward-btn">⏩ 3초</button>
                 <!-- <button id="next-btn">⏭️ 다음</button> -->
                 <button id="loop-btn">🔁 Loop</button>
+                <button id="section-btn">🔁 A-B 반복</button>
             </div>
             <div class="btn-volume-container">
                 <button id="mute-btn">🔊</button>
@@ -177,11 +191,11 @@
             totalTime.textContent = formatTime(audio.duration);
         });
 
-        // 재생위치 업데이트
-        audio.addEventListener('timeupdate', () => {
-            seekbar.value = Math.floor(audio.currentTime);
-            currentTime.textContent = formatTime(audio.currentTime);
-        });
+        // // 재생위치 업데이트
+        // audio.addEventListener('timeupdate', () => {
+        //     seekbar.value = Math.floor(audio.currentTime);
+        //     currentTime.textContent = formatTime(audio.currentTime);
+        // });
 
         // 시크바 이동
         seekbar.addEventListener('input', () => {
@@ -266,6 +280,52 @@
         file.addEventListener("change", (e) => {
             audio.src = URL.createObjectURL(e.target.files[0]);
             fileName.textContent = e.target.files[0].name;
+        });
+
+        /* 구간 반복 */
+        const sectionBtn = document.querySelector("#section-btn");
+        let sectionState = 0;
+        let startTime = 0;
+        let endTime = 0;
+
+        const setSectionStart = () => {
+            startTime = audio.currentTime;
+            sectionState = 1;
+            sectionBtn.classList.add("start");
+        };
+
+        const setSectionEnd = () => {
+            endTime = audio.currentTime;
+            sectionState = 2;
+            sectionBtn.classList.add("end");
+        };
+
+        const clearSection = () => {
+            startTime = 0;
+            endTime = 0;
+            sectionState = 0;
+            sectionBtn.classList.remove("start");
+            sectionBtn.classList.remove("end");
+            console.log
+        };
+
+        sectionBtn.addEventListener("click", () => {
+            if (sectionState === 0) {
+                setSectionStart();
+            } else if (sectionState === 1) {
+                setSectionEnd();
+            } else if (sectionState === 2) {
+                clearSection();
+            }
+        });
+
+        // 재생위치 업데이트
+        audio.addEventListener('timeupdate', () => {
+            if (sectionState === 2 && audio.currentTime >= endTime) {
+                audio.currentTime = startTime;
+            }
+            seekbar.value = Math.floor(audio.currentTime);
+            currentTime.textContent = formatTime(audio.currentTime);
         });
 
     </script>
