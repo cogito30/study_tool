@@ -5,7 +5,7 @@
 - [Stopwatch](./02_stopwatch/)
 - [Planner]()
 - [Timer]()
-- [Music Player]()
+- [Music Player](./03_music_player/)
 - [Video Player]()
 
 ## Clock
@@ -29,3 +29,13 @@
 - control palyspeed(0.25x-2.0x)
 - shortcut
 - open multiple files
+
+## Video Player
+- open file
+- progressbar, current-time, total-time
+- play and pause
+- control volume and mute
+- forward/backward 5 seconds
+- control palyspeed(0.25x-2.0x)
+- fullscreen
+- shortcut

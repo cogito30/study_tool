@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        .video-player {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 640px;
+            margin: 20px auto;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            font-family: Arial, sans-serif;
+            color: #fff;
+        }
+
+        .video-player video {
+            width: 100%;
+            display: block;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            background: rgba(20, 20, 20, 0.9);
+        }
+
+        .controls button {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: color 0.2s;
+        }
+
+        .controls button:hover {
+            color: #1db954;
+        }
+
+        #progress {
+            flex: 1;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+
+        #current-time, #duration {
+            font-size: 14px;
+            margin: 0 5px;
+            min-width: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        #volume{
+            width: 80px;
+            cursor: pointer;
+        }
+
+        #volume-value {
+            color: white;
+        }
+
+        .speed-control-container {
+            margin: 10px;
+        }
+
+        label {
+            padding: 8px 12px;
+            color: white;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        select:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-player">
+        <video src="../test.mov" id="video" width="1080" height="720"></video>
+    </div>
+
+    <div class="controls">
+        <button id="play-pause">▶</button>
+
+        <input type="range" id="progress" value="0" min="0" step="0.1">
+
+        <span id="current-time">0:00</span> / 
+        <span id="duration">0:00</span>
+
+        <button id="mute">🔊</button>
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5">
+        <span id="volume-value">50</span>
+
+        <button id="fullscreen">⛶</button>
+
+        <div class="speed-control-container">
+            <label for="speed-control">재생 속도</label>
+            <select id="speed-control">
+                <option value="0.25">0.25x</option>
+                <option value="0.5">0.5x</option>
+                <option value="0.75">0.75x</option>
+                <option value="1" selected>1x (기본)</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+            </select>
+        </div>
+        
+        <div class="file-container">
+            <input type="file" id="file-input" class="file-input" multiple accept="video/*" >
+            <div id="file-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.querySelector("#video");
+        const playPauseBtn = document.querySelector("#play-pause");
+
+        playPauseBtn.addEventListener("click", () => {
+            if (video.paused) {
+                video.play();
+                playPauseBtn.textContent = "⏸";
+            } else {
+                video.pause();
+                playPauseBtn.textContent = "▶";
+            }
+        });  
+
+        const progressBar = document.querySelector("#progress");
+        const currentTime = document.querySelector("#current-time");
+        const totalTime = document.querySelector("#duration");
+
+        const formatTime = (time) => {
+            const hour = String(Math.floor((time / 3600) % 60)).padStart(2, '0');
+            const minute = String(Math.floor((time / 60) % 60)).padStart(2, '0');
+            const second = String(Math.floor(time % 60)).padStart(2, '0');
+            return `${hour}:${minute}: ${second}`
+        };
+
+
+        video.addEventListener("loadedmetadata", () => {
+            progressBar.max = video.duration;
+            currentTime.textContent = formatTime(video.currentTime);
+            totalTime.textContent = formatTime(video.duration);
+        });
+
+        video.addEventListener("timeupdate", () => {
+            progressBar.value = video.currentTime;
+            currentTime.textContent = formatTime(video.currentTime);
+        });
+
+        progressBar.addEventListener("input", () => {
+            video.currentTime = progressBar.value;
+            currentTime.textContent = formatTime(video.currentTime);
+        });
+
+        /* volume control */
+        const volumeBar = document.querySelector("#volume");
+        const muteBtn = document.querySelector("#mute");
+        const volumeValue = document.querySelector("#volume-value");
+
+        const formatVolume = (volume) => {
+            const volumeValue = String(Math.floor(volume * 100)).padStart(2, '0');
+            return `${volumeValue}`;
+        };
+
+        volumeBar.addEventListener("input", () => {
+            video.volume = volumeBar.value;
+            muteBtn.textContent = video.volume === 0 ? "🔇" : "🔊";
+            volumeValue.textContent = formatVolume(volumeBar.value);
+        });
+
+        muteBtn.addEventListener("click", () => {
+            video.muted = !video.muted;
+            muteBtn.textContent = video.muted ? "🔇" : "🔊";
+            volumeBar.value = video.muted ? 0 : video.volume;
+            volumeValue.textContent = formatVolume(volumeBar.value);
+        });
+
+        /* fullscreen */
+        const fullscreenBtn = document.getElementById('fullscreen');
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                video.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        /* control video speed */
+        const speedControl = document.getElementById("speed-control");
+
+        speedControl.addEventListener("change", () => {
+            video.playbackRate = parseFloat(speedControl.value);
+        });
+
+        // 
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playPauseBtn.click();
+            } else if (e.code === 'ArrowLeft') {
+                video.currentTime = Math.max(0, video.currentTime - 5)
+            } else if (e.code === 'ArrowRight') {
+                video.currentTime = Math.max(0, video.currentTime + 5);
+            } else if (e.code === 'KeyM') {
+                muteBtn.click();
+            } else if (e.code === 'KeyO') {
+                fileInput.click(); 
+            } else if (e.code === 'Equal') {
+                volumeBar.value = parseFloat(volumeBar.value) + parseFloat(volumeBar.step);
+                video.volume = volumeBar.value;
+                if (video.volume === 0) {
+                    muteBtn.textContent = "🔇";
+                } else {
+                    muteBtn.textContent = "🔊";
+                }
+                volumeValue.textContent = formatVolume(volumeBar.value);
+            } else if (e.code === 'Minus') {
+                volumeBar.value -= 0.01;
+                video.volume = volumeBar.value;
+                if (video.volume === 0) {
+                    muteBtn.textContent = "🔇";
+                } else {
+                    muteBtn.textContent = "🔊";
+                }
+                volumeValue.textContent = formatVolume(volumeBar.value);
+            }
+        });
+
+        /* open file */
+        const fileInput = document.querySelector("#file-input");
+
+        fileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                video.src = url;
+                video.load();
+                video.play();
+            }
+        });
+
+    </script>
+</body>
+</html>
